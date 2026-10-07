@@ -1414,11 +1414,7 @@ dialog::backdrop {
   border-color: var(--accent);
   background: var(--soft);
 }
-.texture-depth-action {
-  width: 100%;
-  margin-top: 14px;
-  white-space: normal;
-}
+
 #new-dialog {
   width: 400px;
 }

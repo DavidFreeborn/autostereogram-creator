@@ -4,8 +4,7 @@ import AxeBuilder from "@axe-core/playwright";
 import { pathToFileURL } from "node:url";
 import path from "node:path";
 import fs from "node:fs/promises";
-const offline = process.argv.includes("--standalone"),
-  ai = process.argv.includes("--ai");
+const offline = process.argv.includes("--standalone");
 const out = path.resolve(
   "test-results",
   offline ? "simple-offline" : "simple-ui",
@@ -146,7 +145,7 @@ try {
   await page
     .locator("#texture-file")
     .setInputFiles({ name: "texture.png", mimeType: "image/png", buffer: png });
-  await expect(page.locator("#texture-depth")).toBeVisible();
+  await expect(page.locator("#texture-depth")).toHaveCount(0);
   await audit("texture");
   for (const [width, height, label] of [
     [820, 1000, "tablet"],
@@ -170,31 +169,6 @@ try {
     await page.locator("#tab-stereo").click();
   }
   await page.setViewportSize({ width: 1280, height: 850 });
-  if (ai) {
-    const r = await page.request.get(
-      "https://huggingface.co/datasets/Xenova/transformers.js-docs/resolve/main/cats.jpg",
-    );
-    assert.ok(r.ok());
-    await page.locator("#texture-file").setInputFiles({
-      name: "cats.jpg",
-      mimeType: "image/jpeg",
-      buffer: await r.body(),
-    });
-    const before = await snapshot();
-    await page.locator("#texture-depth").click();
-    await expect(page.locator("#image-title")).toHaveText("Depth from texture");
-    await expect(page.locator("#photo-status")).toContainText(
-      "Depth estimated.",
-      { timeout: 180000 },
-    );
-    await audit("texture-depth");
-    await page.locator("#add-photo-depth").click();
-    const after = await snapshot();
-    assert.equal(after.scene.layers.length, before.scene.layers.length + 1);
-    assert.deepEqual(after.texture, before.texture);
-    await page.locator("#undo").click();
-    assert.deepEqual((await snapshot()).scene, before.scene);
-  }
   assert.deepEqual(errors, []);
   assert.ok(
     audits.every((a) => a.violations.length === 0),
@@ -203,8 +177,7 @@ try {
   console.log(
     "PASS simple creation, drawing modes, immediate text editing, scale-aware glyphs and " +
       audits.length +
-      " accessible states" +
-      (ai ? ", real texture depth inference" : ""),
+      " accessible states",
   );
 } finally {
   await fs.writeFile(

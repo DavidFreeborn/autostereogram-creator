@@ -171,7 +171,6 @@ export function createCreatorTools({
     $("palette-field").hidden = custom;
     $("shuffle").hidden = custom;
     $("generated-texture").hidden = !custom;
-    $("texture-depth").hidden = !custom;
     $("import-texture").textContent = custom
       ? "Replace texture"
       : "Import texture";
@@ -436,16 +435,16 @@ export function createCreatorTools({
       $("photo-status").textContent = e.message;
     }
   };
-  async function openImage(file, suppliedAsset) {
+  async function openImage(file) {
     const revision = getRevision(),
-      asset = suppliedAsset || (await readImage(file));
+      asset = await readImage(file);
     if (revision !== getRevision())
       throw new Error(
         "The design changed during import. Choose the image again.",
       );
     photoSequence++;
     photo = { file, asset };
-    $("image-title").textContent = file ? "Add an image" : "Depth from texture";
+    $("image-title").textContent = "Add an image";
     estimation = null;
     $("photo-tabs").hidden = true;
     $("photo-download-note").hidden = false;
@@ -466,12 +465,6 @@ export function createCreatorTools({
     editor.transact("Use generated texture", () => {
       editor.state.settings.palette = "verdigris";
     });
-
-  $("texture-depth").onclick = async () => {
-    if (!editor.state.texture) return;
-    await openImage(null, { imageData: editor.state.texture, name: "Texture" });
-    $("estimate-photo").click();
-  };
 
   let galleryReady = false;
   function populateGallery() {

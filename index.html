@@ -48,7 +48,20 @@
   .tool-page #stage { height:clamp(340px,58dvh,620px); }
   .tool-page #stage.has-tool-options { height:clamp(310px,51dvh,560px); }
 }
+/* Keep controls and supporting type legible at the same scale as the other tools. */
+.tool-page .inspector h2 { font:400 20px/1.3 var(--serif); }
+.tool-page dialog h2 { font:400 25px/1.25 var(--serif); letter-spacing:normal; }
+.tool-page :is(.control-note,.dialog-status,.save-state,#context-status,#rendering,.zoom-controls output,.layer-meta,.layer-state) { font-size:14px; }
+.tool-page :is(#help-dialog,#viewing-assistant) :is(p,li,dd) { font:18px/1.5 var(--serif); }
+@media(max-width:1050px) { .tool-page .tool-methodology { width:calc(100% - 28px); margin-inline:14px; } }
 @media(max-width:600px) { .tool-page .app-header h1 { font-size:25px; } }
+@media(max-width:540px) {
+  .tool-page #stage,.tool-page #stage.has-tool-options { height:340px; min-height:290px; }
+  .tool-page .tool-methodology { width:calc(100% - 20px); margin-inline:10px; }
+  .tool-page .canvas-footer { flex-wrap:wrap; justify-content:space-between; gap:3px 8px; }
+  .tool-page #context-status { flex:1 1 100%; max-width:none; white-space:normal; }
+  .tool-page .zoom-controls { margin-left:auto; }
+}
 </style>
 </head>
   <body class="tool-page">
@@ -753,10 +766,17 @@
     </main>
     <details class="tool-methodology">
       <summary>Model and methodology</summary>
-      <p>Autostereograms encode depth through horizontal repetition. The two eyes match repeated parts of the image, producing the impression of a three-dimensional surface. This editor combines shapes, text and painted depth into a depth map, then generates a texture with the required pixel correspondences.</p>
-      <p>The renderer uses symmetric colour constraints and hidden-surface tests. Depth is relative, and the final image uses whole-pixel disparities: very fine depth differences may disappear at small export sizes. Imported photograph estimates are predictions of relative depth, not measured geometry. The optional model runs locally after its first download.</p>
-      <p>Method: Harold Thimbleby, Ian Witten and Stuart Inglis, <a href="https://harold.thimbleby.net/sirds/ieee3d.pdf">“Displaying 3D Images: Algorithms for Single-Image Random-Dot Stereograms”</a> (1994). See Help for editing controls and Viewing help for viewing practice.</p>
-    </details>
+      <h3>Depth and binocular correspondence</h3>
+      <p>An autostereogram encodes depth through horizontal repetition. Each eye matches a different repetition of the same texture. The editor combines shapes, text and painted depth into a relative depth map, then constrains matching pixels to have the same colour. Texture colour itself does not encode depth.</p>
+      <h3>Geometry and rendering</h3>
+      <p>Depth <i>z</i> runs from 0 (far) to 1 (near). Let <i>R</i> be the background repeat in output pixels. If the depth-strength control reads <i>P</i> percent, <i>a</i> = 0.2 × <i>P</i> / 100. For parallel viewing, μ = 2<i>a</i> / (1 + <i>a</i>) and the pixel separation is:</p>
+      <p class="equation"><i>s</i>(<i>z</i>) = round[2<i>R</i>(1 − μ<i>z</i>) / (2 − μ<i>z</i>)]</p>
+      <p>Cross-eyed viewing uses μ = 2<i>a</i> / (3 + <i>a</i>) and replaces (1 − μ<i>z</i>) with (1 + μ<i>z</i>). Nearer surfaces then have a larger separation. The renderer applies symmetric colour constraints row by row and tests for hidden surfaces before linking pixels. Image generation runs in a worker; editing previews use fewer pixels than a full-resolution export.</p>
+      <h3>Interpretation and limits</h3>
+      <p>Depth is relative, not a distance measurement. Whole-pixel disparities can flatten fine depth changes, especially in small exports. Check detail marks changes that disappear at the chosen resolution. Photograph-based depth estimates are predictions, not measured geometry; their optional model runs locally after its first download. Design and Depth map provide direct views of the scene even when the stereoscopic effect is difficult to see.</p>
+      <h3>Reference</h3>
+      <p>Harold Thimbleby, Ian Witten and Stuart Inglis, <a href="https://harold.thimbleby.net/sirds/ieee3d.pdf">“Displaying 3D Images: Algorithms for Single-Image Random-Dot Stereograms”</a> (1994). The editor adapts its correspondence and hidden-surface method with adjustable depth strength and a cross-eyed viewing mode. See Help for editing controls and Viewing help for viewing practice.</p>
+      </details>
     <input
       id="depth-file"
       type="file"
